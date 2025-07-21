@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopwatch App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stopwatch-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 30px;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .start {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .start:hover {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .pause {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+        }
+
+        .pause:hover {
+            background: linear-gradient(45deg, #f57c00, #ff9800);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+        }
+
+        .reset {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .reset:hover {
+            background: linear-gradient(45deg, #d32f2f, #f44336);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .title {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            .display {
+                font-size: 2.5rem;
+            }
+
+            .stopwatch-container {
+                padding: 30px 20px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            button {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="stopwatch-container">
+        <h1 class="title">Stopwatch</h1>
+        <div class="display" id="display">00:00:000</div>
+        <div class="controls">
+            <button class="start" id="startBtn" onclick="startStop()">Start</button>
+            <button class="pause" id="pauseBtn" onclick="pause()" disabled>Pause</button>
+            <button class="reset" id="resetBtn" onclick="reset()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval = null;
+        let isRunning = false;
+        let isPaused = false;
+
+        function formatTime(milliseconds) {
+            const totalMs = Math.floor(milliseconds);
+            const minutes = Math.floor(totalMs / 60000);
+            const seconds = Math.floor((totalMs % 60000) / 1000);
+            const ms = totalMs % 1000;
+
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${ms.toString().padStart(3, '0')}`;
+        }
+
+        function updateDisplay() {
+            const currentTime = Date.now();
+            elapsedTime = currentTime - startTime;
+            document.getElementById('display').textContent = formatTime(elapsedTime);
+        }
+
+        function startStop() {
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+
+            if (!isRunning) {
+                // Start the timer
+                startTime = Date.now() - (isPaused ? elapsedTime : 0);
+                timerInterval = setInterval(updateDisplay, 10);
+                isRunning = true;
+                isPaused = false;
+
+                startBtn.textContent = 'Stop';
+                startBtn.className = 'reset';
+                pauseBtn.disabled = false;
+            } else {
+                // Stop the timer
+                clearInterval(timerInterval);
+                isRunning = false;
+
+                startBtn.textContent = 'Start';
+                startBtn.className = 'start';
+                pauseBtn.disabled = true;
+            }
+        }
+
+        function pause() {
+            if (isRunning && !isPaused) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                isPaused = true;
+
+                document.getElementById('startBtn').textContent = 'Resume';
+                document.getElementById('startBtn').className = 'start';
+            }
+        }
+
+        function reset() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            isPaused = false;
+            elapsedTime = 0;
+
+            document.getElementById('display').textContent = '00:00:000';
+            document.getElementById('startBtn').textContent = 'Start';
+            document.getElementById('startBtn').className = 'start';
+            document.getElementById('pauseBtn').disabled = true;
+        }
+    </script>
+</body>
+
+</html>
